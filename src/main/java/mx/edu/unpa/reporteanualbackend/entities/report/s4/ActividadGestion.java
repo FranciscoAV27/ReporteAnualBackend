@@ -26,8 +26,8 @@ public class ActividadGestion {
     @Column(nullable = false, length = 300)
     private String nombre;
 
-    @NotBlank @Size(max = 300)
-    @Column(name = "comision_o_puesto", nullable = false, length = 300)
+    @Size(max = 300)
+    @Column(name = "comision_o_puesto", length = 300)
     private String comisionOPuesto;
 
     @Column(name = "periodo_inicio")

@@ -12,7 +12,7 @@ public class ActividadGestionRequestDTO {
     @NotBlank @Size(max = 300)
     private String nombre;
 
-    @NotBlank @Size(max = 300)
+    @Size(max = 300)
     private String comisionOPuesto;
 
     private LocalDate periodoInicio;
