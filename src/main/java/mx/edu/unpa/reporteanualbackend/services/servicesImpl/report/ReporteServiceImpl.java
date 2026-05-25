@@ -109,4 +109,26 @@ public class ReporteServiceImpl implements ReporteService {
         return reporteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reporte no encontrado con id: " + id));
     }
+
+    @Override
+    @Transactional
+    public ReporteResponseDTO toggleSeccion(Integer id, Integer numSeccion) {
+        Reporte reporte = findOrThrow(id);
+
+        if (reporte.getEstado() == EstadoReporte.ACEPTADO)
+            throw new BusinessException("No se puede modificar un reporte aceptado.");
+
+        switch (numSeccion) {
+            case 1 -> reporte.setSeccion1Concluida(!Boolean.TRUE.equals(reporte.getSeccion1Concluida()));
+            case 2 -> reporte.setSeccion2Concluida(!Boolean.TRUE.equals(reporte.getSeccion2Concluida()));
+            case 3 -> reporte.setSeccion3Concluida(!Boolean.TRUE.equals(reporte.getSeccion3Concluida()));
+            case 4 -> reporte.setSeccion4Concluida(!Boolean.TRUE.equals(reporte.getSeccion4Concluida()));
+            case 5 -> reporte.setSeccion5Concluida(!Boolean.TRUE.equals(reporte.getSeccion5Concluida()));
+            case 6 -> reporte.setSeccion6Concluida(!Boolean.TRUE.equals(reporte.getSeccion6Concluida()));
+            case 7 -> reporte.setSeccion7Concluida(!Boolean.TRUE.equals(reporte.getSeccion7Concluida()));
+            default -> throw new BusinessException("Número de sección inválido: " + numSeccion);
+        }
+
+        return reporteMapper.toResponse(reporteRepository.save(reporte));
+    }
 }

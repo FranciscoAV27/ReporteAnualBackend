@@ -83,4 +83,13 @@ public class ReporteController {
     public ResponseEntity<ReporteResponseDTO> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(reporteService.obtenerPorId(id));
     }
+
+    // Profesor alterna el estado de conclusión de una sección
+    @PatchMapping("/{id}/seccion/{numSeccion}/concluir")
+    @PreAuthorize("hasRole('PROFESOR')")
+    public ResponseEntity<ReporteResponseDTO> toggleSeccion(
+            @PathVariable Integer id,
+            @PathVariable Integer numSeccion) {
+        return ResponseEntity.ok(reporteService.toggleSeccion(id, numSeccion));
+    }
 }

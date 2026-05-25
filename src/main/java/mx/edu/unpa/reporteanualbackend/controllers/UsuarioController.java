@@ -35,6 +35,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.obtenerPorId(id));
     }
+    
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

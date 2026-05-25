@@ -60,6 +60,27 @@ public class Reporte {
     @Column(name = "aprobado_en")
     private LocalDateTime aprobadoEn;
 
+    @Column(name = "seccion1_concluida", nullable = false)
+    private Boolean seccion1Concluida = false;
+
+    @Column(name = "seccion2_concluida", nullable = false)
+    private Boolean seccion2Concluida = false;
+
+    @Column(name = "seccion3_concluida", nullable = false)
+    private Boolean seccion3Concluida = false;
+
+    @Column(name = "seccion4_concluida", nullable = false)
+    private Boolean seccion4Concluida = false;
+
+    @Column(name = "seccion5_concluida", nullable = false)
+    private Boolean seccion5Concluida = false;
+
+    @Column(name = "seccion6_concluida", nullable = false)
+    private Boolean seccion6Concluida = false;
+
+    @Column(name = "seccion7_concluida", nullable = false)
+    private Boolean seccion7Concluida = false;
+
     @PrePersist
     protected void onCreate() {
         this.creadoEn = LocalDateTime.now();

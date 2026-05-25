@@ -14,4 +14,5 @@ public interface ReporteService {
     List<ReporteResponseDTO> obtenerPorProfesor(Integer profesorId);
     List<ReporteResponseDTO> obtenerPorCarreraYAnio(Integer carreraId, Integer anio);
     List<ReporteResponseDTO> obtenerPendientes();
+    ReporteResponseDTO toggleSeccion(Integer id, Integer numSeccion); // ← nuevo
 }

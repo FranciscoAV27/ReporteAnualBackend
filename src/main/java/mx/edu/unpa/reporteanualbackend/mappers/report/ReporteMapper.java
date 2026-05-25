@@ -14,6 +14,7 @@ public interface ReporteMapper {
 
     @Mapping(source = "profesor.id", target = "profesorId")
     @Mapping(source = "profesor.nombre", target = "profesorNombre")
+    @Mapping(source = "profesor.apellidos", target = "profesorApellidos") // ← nuevo
     ReporteResponseDTO toResponse(Reporte entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

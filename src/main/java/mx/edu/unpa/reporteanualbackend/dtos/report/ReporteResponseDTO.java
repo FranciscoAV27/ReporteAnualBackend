@@ -9,6 +9,7 @@ public class ReporteResponseDTO {
     private Integer id;
     private Integer profesorId;
     private String profesorNombre;
+    private String profesorApellidos;
     private Integer anio;
     private EstadoReporte estado;
     private String comentariosAdmin;
@@ -21,4 +22,11 @@ public class ReporteResponseDTO {
     private LocalDateTime actualizadoEn;
     private LocalDateTime enviadoEn;
     private LocalDateTime aprobadoEn;
+    private Boolean seccion1Concluida;
+    private Boolean seccion2Concluida;
+    private Boolean seccion3Concluida;
+    private Boolean seccion4Concluida;
+    private Boolean seccion5Concluida;
+    private Boolean seccion6Concluida;
+    private Boolean seccion7Concluida;
 }

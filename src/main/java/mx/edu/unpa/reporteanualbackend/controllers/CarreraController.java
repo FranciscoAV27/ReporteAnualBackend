@@ -2,8 +2,10 @@ package mx.edu.unpa.reporteanualbackend.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mx.edu.unpa.reporteanualbackend.dtos.asignatura.AsignaturaResponseDTO;
 import mx.edu.unpa.reporteanualbackend.dtos.carrera.CarreraRequestDTO;
 import mx.edu.unpa.reporteanualbackend.dtos.carrera.CarreraResponseDTO;
+import mx.edu.unpa.reporteanualbackend.repositories.AsignaturaRepository;
 import mx.edu.unpa.reporteanualbackend.services.CarreraService;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +18,7 @@ import java.util.List;
 public class CarreraController {
 
     private final CarreraService carreraService;
+    private final AsignaturaRepository asignaturaRepository; // ← nuevo
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -31,6 +34,22 @@ public class CarreraController {
     @GetMapping("/{id}")
     public ResponseEntity<CarreraResponseDTO> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(carreraService.obtenerPorId(id));
+    }
+
+    // ── Nuevo endpoint ─────────────────────────────────────
+    @GetMapping("/{id}/asignaturas")
+    public ResponseEntity<List<AsignaturaResponseDTO>> obtenerAsignaturas(@PathVariable Integer id) {
+        List<AsignaturaResponseDTO> result = asignaturaRepository
+                .findByCarreraIdOrderBySemestreAscNombreAsc(id)
+                .stream()
+                .map(a -> AsignaturaResponseDTO.builder()
+                        .id(a.getId())
+                        .carreraId(id)
+                        .semestre(a.getSemestre())
+                        .nombre(a.getNombre())
+                        .build())
+                .toList();
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/{id}")
