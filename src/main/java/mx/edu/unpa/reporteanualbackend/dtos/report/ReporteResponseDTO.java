@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class ReporteResponseDTO {
     private Integer id;
     private Integer profesorId;
+    private String profesorCarrera;
     private String profesorNombre;
     private String profesorApellidos;
     private Integer anio;
@@ -29,4 +30,9 @@ public class ReporteResponseDTO {
     private Boolean seccion5Concluida;
     private Boolean seccion6Concluida;
     private Boolean seccion7Concluida;
+    private String rechazadoPorNombre;
+    private String rechazadoPorApellidos;
+    private String rechazadoEn;
+    private String aprobadoPorNombre;
+    private String aprobadoPorApellidos;
 }

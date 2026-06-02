@@ -12,4 +12,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByNumeroTrabajo(String numeroTrabajo);
     boolean existsByCorreo(String correo);
     List<Usuario> findByRolAndCarreraId(Rol rol, Integer carreraId);
+    long countByRol(Rol rol);
 }

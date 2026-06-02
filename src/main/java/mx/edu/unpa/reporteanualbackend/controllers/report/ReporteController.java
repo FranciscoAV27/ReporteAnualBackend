@@ -6,12 +6,16 @@ import mx.edu.unpa.reporteanualbackend.dtos.report.ReporteRequestDTO;
 import mx.edu.unpa.reporteanualbackend.dtos.report.ValidacionRequestDTO;
 import mx.edu.unpa.reporteanualbackend.dtos.report.ReporteResponseDTO;
 import mx.edu.unpa.reporteanualbackend.entities.Usuario;
+import mx.edu.unpa.reporteanualbackend.entities.enums.EstadoReporte;
+import mx.edu.unpa.reporteanualbackend.entities.enums.Rol;
+import mx.edu.unpa.reporteanualbackend.repositories.UsuarioRepository;
 import mx.edu.unpa.reporteanualbackend.services.report.ReporteService;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reportes")
@@ -19,6 +23,7 @@ import java.util.List;
 public class ReporteController {
 
     private final ReporteService reporteService;
+    private final UsuarioRepository usuarioRepository;
 
     // Profesor crea su reporte del año
     @PostMapping
@@ -47,24 +52,38 @@ public class ReporteController {
     }
 
     // Secretaria valida (aprueba o rechaza)
-    @PatchMapping("/{id}/validar")
-    @PreAuthorize("hasRole('SECRETARIA')")
+    /*@PatchMapping("/{id}/validar")
     public ResponseEntity<ReporteResponseDTO> validar(
             @PathVariable Integer id,
             @Valid @RequestBody ValidacionRequestDTO dto) {
         return ResponseEntity.ok(reporteService.validar(id, dto));
+    }*/
+
+    @PatchMapping("/{id}/validar")
+    public ResponseEntity<ReporteResponseDTO> validar(
+            @PathVariable Integer id,
+            @Valid @RequestBody ValidacionRequestDTO dto,
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(reporteService.validar(id, dto, usuario));
+    }
+
+    @PatchMapping("/{id}/touch")
+    @PreAuthorize("hasRole('PROFESOR')")
+    public ResponseEntity<Void> touch(@PathVariable Integer id) {
+        reporteService.touch(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Secretaria: lista reportes pendientes
     @GetMapping("/pendientes")
-    @PreAuthorize("hasRole('SECRETARIA')")
+    //@PreAuthorize("hasRole('SECRETARIA')")
     public ResponseEntity<List<ReporteResponseDTO>> obtenerPendientes() {
         return ResponseEntity.ok(reporteService.obtenerPendientes());
     }
 
     // Profesor: historial de sus reportes
     @GetMapping("/mis-reportes")
-    @PreAuthorize("hasRole('PROFESOR')")
+    //@PreAuthorize("hasRole('PROFESOR')")
     public ResponseEntity<List<ReporteResponseDTO>> miHistorial(
             @AuthenticationPrincipal Usuario usuario) {
         return ResponseEntity.ok(reporteService.obtenerPorProfesor(usuario.getId()));
@@ -91,5 +110,29 @@ public class ReporteController {
             @PathVariable Integer id,
             @PathVariable Integer numSeccion) {
         return ResponseEntity.ok(reporteService.toggleSeccion(id, numSeccion));
+    }
+
+    @GetMapping
+    //@PreAuthorize("hasRole('SECRETARIA') or hasRole('ADMIN')")
+    public ResponseEntity<List<ReporteResponseDTO>> obtenerPorAnio(
+            @RequestParam Integer anio) {
+        return ResponseEntity.ok(reporteService.obtenerPorAnio(anio));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> obtenerStats(@RequestParam Integer anio) {
+        long totalProfesores = usuarioRepository.countByRol(Rol.PROFESOR);
+        List<ReporteResponseDTO> reportes = reporteService.obtenerPorAnio(anio);
+        long aceptados   = reportes.stream().filter(r -> r.getEstado() == EstadoReporte.ACEPTADO).count();
+        long enRevision  = reportes.stream().filter(r -> r.getEstado() == EstadoReporte.PENDIENTE_VALIDACION).count();
+        long rechazados  = reportes.stream().filter(r -> r.getEstado() == EstadoReporte.RECHAZADO).count();
+        long sinEntregar = totalProfesores - aceptados - enRevision - rechazados;
+        return ResponseEntity.ok(Map.of(
+                "totalProfesores", totalProfesores,
+                "aceptados",       aceptados,
+                "enRevision",      enRevision,
+                "enCorreccion",    rechazados,
+                "sinEntregar",     Math.max(sinEntregar, 0)
+        ));
     }
 }
