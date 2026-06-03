@@ -22,7 +22,7 @@ public class PeriodoServiceImpl implements PeriodoService {
 
     private final PeriodoRepository periodoRepository;
 
-    @Override
+    /*@Override
     @Transactional
     public PeriodoResponseDTO iniciar(PeriodoRequestDTO dto, Usuario creadoPor) {
         if (periodoRepository.findByEstado(EstadoPeriodo.ACTIVO).isPresent())
@@ -30,6 +30,46 @@ public class PeriodoServiceImpl implements PeriodoService {
 
         if (!dto.getFechaLimite().isAfter(dto.getFechaApertura()))
             throw new BusinessException("La fecha límite debe ser posterior a la de apertura.");
+
+        int anio = calcularAnioCiclo(dto.getFechaApertura());
+
+        Periodo periodo = Periodo.builder()
+                .anio(anio)
+                .fechaApertura(dto.getFechaApertura())
+                .fechaLimite(dto.getFechaLimite())
+                .estado(EstadoPeriodo.ACTIVO)
+                .instrucciones(dto.getInstrucciones())
+                .creadoPor(creadoPor)
+                .build();
+
+        return toResponse(periodoRepository.save(periodo));
+    }*/
+
+    @Override
+    @Transactional
+    public PeriodoResponseDTO iniciar(PeriodoRequestDTO dto, Usuario creadoPor) {
+
+        if (periodoRepository.findByEstado(EstadoPeriodo.ACTIVO).isPresent())
+            throw new ConflictException("Ya hay un periodo activo.");
+
+        LocalDate hoy = LocalDate.now();
+
+        // Fecha de apertura debe ser hoy
+        if (!dto.getFechaApertura().isEqual(hoy))
+            throw new BusinessException("La fecha de apertura debe ser el día de hoy.");
+
+        // Fecha límite debe ser posterior a hoy
+        if (!dto.getFechaLimite().isAfter(hoy))
+            throw new BusinessException("La fecha límite debe ser posterior al día de hoy.");
+
+        // Calcular fin del ciclo actual (30 de septiembre del año de cierre)
+        int anioCiclo = calcularAnioCiclo(hoy);
+        LocalDate finCiclo = LocalDate.of(anioCiclo, 9, 30);
+
+        // Fecha límite no puede exceder el fin del ciclo escolar
+        if (dto.getFechaLimite().isAfter(finCiclo))
+            throw new BusinessException(
+                    "La fecha límite no puede ser posterior al 30 de septiembre de " + anioCiclo + ".");
 
         int anio = calcularAnioCiclo(dto.getFechaApertura());
 
