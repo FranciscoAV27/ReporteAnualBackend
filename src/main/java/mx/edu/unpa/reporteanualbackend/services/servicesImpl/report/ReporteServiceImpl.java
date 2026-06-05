@@ -96,7 +96,7 @@ public class ReporteServiceImpl implements ReporteService {
         return reporteMapper.toResponse(reporteRepository.save(reporte));
     }*/
 
-    @Override
+    /*@Override
     @Transactional
     public ReporteResponseDTO validar(Integer id, ValidacionRequestDTO dto, Usuario secretaria) {
         Reporte reporte = findOrThrow(id);
@@ -115,6 +115,45 @@ public class ReporteServiceImpl implements ReporteService {
             reporte.setRechazadoPor(secretaria);
             reporte.setRechazadoEn(LocalDateTime.now());
         }
+        return reporteMapper.toResponse(reporteRepository.save(reporte));
+    }*/
+
+    @Override
+    @Transactional
+    public ReporteResponseDTO validar(Integer id, ValidacionRequestDTO dto, Usuario secretaria) {
+        Reporte reporte = findOrThrow(id);
+        if (reporte.getEstado() != EstadoReporte.PENDIENTE_VALIDACION)
+            throw new BusinessException("Solo se pueden validar reportes en estado PENDIENTE_VALIDACION");
+
+        if (dto.getAprobado()) {
+            reporte.setEstado(EstadoReporte.ACEPTADO);
+            reporte.setAprobadoEn(LocalDateTime.now());
+            reporte.setAprobadoPor(secretaria);
+
+            // Crear automáticamente el reporte del siguiente ciclo
+            int siguienteAnio = reporte.getAnio() + 1;
+            boolean yaExiste = reporteRepository
+                    .findByProfesorIdAndAnio(reporte.getProfesor().getId(), siguienteAnio)
+                    .isPresent();
+
+            if (!yaExiste) {
+                Reporte siguiente = Reporte.builder()
+                        .profesor(reporte.getProfesor())
+                        .anio(siguienteAnio)
+                        .estado(EstadoReporte.BORRADOR)
+                        .build();
+                reporteRepository.save(siguiente);
+            }
+
+        } else {
+            if (dto.getComentariosAdmin() == null || dto.getComentariosAdmin().isBlank())
+                throw new BusinessException("El motivo de rechazo es obligatorio");
+            reporte.setEstado(EstadoReporte.RECHAZADO);
+            reporte.setComentariosAdmin(dto.getComentariosAdmin());
+            reporte.setRechazadoPor(secretaria);
+            reporte.setRechazadoEn(LocalDateTime.now());
+        }
+
         return reporteMapper.toResponse(reporteRepository.save(reporte));
     }
 
@@ -191,4 +230,15 @@ public class ReporteServiceImpl implements ReporteService {
         return reporteRepository.findByAnio(anio).stream()
                 .map(reporteMapper::toResponse).toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReporteResponseDTO> obtenerHistorialProfesor(Integer profesorId) {
+        return reporteRepository
+                .findByProfesorIdAndEstadoOrderByAnioDesc(profesorId, EstadoReporte.ACEPTADO)
+                .stream()
+                .map(reporteMapper::toResponse)
+                .toList();
+    }
+
 }

@@ -135,4 +135,11 @@ public class ReporteController {
                 "sinEntregar",     Math.max(sinEntregar, 0)
         ));
     }
+
+    @GetMapping("/mis-reportes/historial")
+    @PreAuthorize("hasRole('PROFESOR')")
+    public ResponseEntity<List<ReporteResponseDTO>> obtenerHistorialAceptados(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(reporteService.obtenerHistorialProfesor(usuario.getId()));
+    }
 }

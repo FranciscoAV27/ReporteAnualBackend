@@ -24,4 +24,6 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
                                          @Param("anio") Integer anio);
 
     List<Reporte> findByAnio(Integer anio);
+
+    List<Reporte> findByProfesorIdAndEstadoOrderByAnioDesc(Integer profesorId, EstadoReporte estado);
 }
